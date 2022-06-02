@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    tags.datadoghq.com/env: "Production"
+    tags.datadoghq.com/service: "Web"
+    tags.datadoghq.com/version: "Stable"
+spec:
+  template:
+    metadata:
+      labels:
+        tags.datadoghq.com/env: "<environment>"
+        tags.datadoghq.com/service: "Web"
+        tags.datadoghq.com/version: "Stable"
+    spec:
+      volumes:
+        - hostPath:
+            path: /var/run/datadog/
+          name: apmsocketpath
+      containers:
+        - name: web-5488d5545f-52f4g
+          image: robotshop/rs-web:latest
+          volumeMounts:
+            - name: apmsocketpath
+              mountPath: /var/run/datadog
+          env:
+            - name: DD_ENV
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/env']
+            - name: DD_SERVICE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/service']
+            - name: DD_VERSION
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['tags.datadoghq.com/version']
+        
+            - name: DD_LOGS_INJECTION
+              value: "true"
